@@ -1,16 +1,42 @@
 'use strict';
 
 const Hapi = require('hapi');
-const DC = require('dream-cheeky-thunder-driver');
 
 const server = new Hapi.Server();
 server.connection({ port: 3000 });
+
+const DC    = require('dream-cheeky-thunder-driver');
+const Pitch = require('./pitch');
+const Yaw   = require('./yaw');
+
+var debug = function () {
+    console.log(Pitch.getCurrentAngle());
+    console.log(Yaw.getCurrentAngle());
+}
+
+var setCurrentPitch = function (angle) {
+    Pitch.setCurrentAngle(parseInt(angle));
+}
+
+var setCurrentYaw = function (angle) {
+    Yaw.setCurrentAngle(parseInt(angle));
+}
+
+var getCurrentAngles = function () {
+    return {
+        'yaw': Yaw.getCurrentAngle(),
+        'pitch': Pitch.getCurrentAngle(),
+    }
+}
 
 server.route({
     method: 'GET',
     path: '/',
     handler: function (request, reply) {
-        reply('Dream-cheeky-thunder is awake !');
+        DC.park(1000);
+        setCurrentPitch(Pitch.getMaxAngle());
+        setCurrentYaw(Yaw.getMinAngle());
+        reply(getCurrentAngles());
     }
 });
 
@@ -32,12 +58,50 @@ server.route({
                 DC.moveLeft(request.params.duration);
                 break;
             case 'park':
-            default:
-                DC.park();
+                DC.park(1000);
+                setCurrentPitch(Pitch.getMaxAngle());
+                setCurrentYaw(Yaw.getMinAngle());
                 break;
         }
-        var message = 'Dream-cheeky-thunder moving :<br>Direction: ' + encodeURIComponent(request.params.direction) + '<br>Duration: ' + encodeURIComponent(request.params.duration);
-        reply(message);
+        reply(getCurrentAngles());
+    }
+});
+
+/**
+ * Yaw: Left-Right rotation
+ */
+server.route({
+    method: 'GET',
+    path: '/yaw/{angle}',
+    handler: function (request, reply) {
+        var moveAngle = parseInt(Yaw.getCurrentAngle() - parseInt(request.params.angle));
+        var duration = Yaw.toDuration(moveAngle);
+        if (request.params.angle > Yaw.getCurrentAngle()) {
+            DC.moveRight(duration);
+        } else {
+            DC.moveLeft(duration);
+        }
+        setCurrentYaw(request.params.angle);
+        reply(getCurrentAngles());
+    }
+});
+
+/**
+ * Pitch: Up-Down rotation
+ */
+server.route({
+    method: 'GET',
+    path: '/pitch/{angle}',
+    handler: function (request, reply) {
+        var moveAngle = parseInt(Pitch.getCurrentAngle() - parseInt(request.params.angle));
+        var duration = Pitch.toDuration(moveAngle);
+        if (request.params.angle < Pitch.getCurrentAngle()) {
+            DC.moveUp(duration);
+        } else {
+            DC.moveDown(duration);
+        }
+        setCurrentPitch(request.params.angle);
+        reply(getCurrentAngles());
     }
 });
 
@@ -46,8 +110,7 @@ server.route({
     path: '/fire/{shots}',
     handler: function (request, reply) {
         DC.fire(request.params.shots);
-        var message = 'Dream-cheeky-thunder shooting :<br>Shots: ' + encodeURIComponent(request.params.shots);
-        reply(message);
+        reply(getCurrentAngles());
     }
 });
 
