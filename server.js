@@ -8,24 +8,25 @@ server.connection({ port: 3000 });
 const DC    = require('dream-cheeky-thunder-driver');
 const Pitch = require('./pitch');
 const Yaw   = require('./yaw');
-
-var debug = function () {
-    console.log(Pitch.getCurrentAngle());
-    console.log(Yaw.getCurrentAngle());
-}
+const Ammo  = require('./ammo');
 
 var setCurrentPitch = function (angle) {
     Pitch.setCurrentAngle(parseInt(angle));
-}
+};
 
 var setCurrentYaw = function (angle) {
     Yaw.setCurrentAngle(parseInt(angle));
-}
+};
 
-var getCurrentAngles = function () {
+var setAmmoLeft = function (ammoLeft) {
+    Ammo.setShotLeft(parseInt(ammoLeft));
+};
+
+var getData = function () {
     return {
         'yaw': Yaw.getCurrentAngle(),
         'pitch': Pitch.getCurrentAngle(),
+        'ammo': Ammo.getShotLeft(),
     }
 }
 
@@ -36,7 +37,8 @@ server.route({
         DC.park(1000);
         setCurrentPitch(Pitch.getMaxAngle());
         setCurrentYaw(Yaw.getMinAngle());
-        reply(getCurrentAngles());
+        setAmmoLeft(Ammo.getMaxShot());
+        reply(getData());
     }
 });
 
@@ -66,7 +68,7 @@ server.route({
                 setCurrentYaw(Yaw.getMinAngle());
                 break;
         }
-        reply(getCurrentAngles());
+        reply(getData());
     }
 });
 
@@ -85,7 +87,7 @@ server.route({
             DC.moveLeft(duration);
         }
         setCurrentYaw(request.params.angle);
-        reply(getCurrentAngles());
+        reply(getData());
     }
 });
 
@@ -104,7 +106,7 @@ server.route({
             DC.moveDown(duration);
         }
         setCurrentPitch(request.params.angle);
-        reply(getCurrentAngles());
+        reply(getData());
     }
 });
 
@@ -113,7 +115,9 @@ server.route({
     path: '/fire/{shots}',
     handler: function (request, reply) {
         DC.fire(request.params.shots);
-        reply(getCurrentAngles());
+        var ammoLeft = Ammo.getShotLeft() - parseInt(request.params.shots);
+        setAmmoLeft(ammoLeft);
+        reply(getData());
     }
 });
 
