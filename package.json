@@ -1,0 +1,29 @@
+{
+  "name": "dream-cheeky-thunder-hapi",
+  "version": "0.0.0",
+  "description": "Workshop around Hapi Nodejs with dream-cheeky-thunder",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/guillaumedelre/dream-cheeky-thunder-hapi"
+  },
+  "keywords": [
+    "Dream",
+    "Cheeky",
+    "Thunder",
+    "Hapi",
+    "Nodejs"
+  ],
+  "author": "guillaumedelre",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/guillaumedelre/dream-cheeky-thunder-hapi/issues"
+  },
+  "dependencies": {
+    "hapi": "^13.4.1",
+    "dream-cheeky-thunder-driver": "0.0.1"
+  }
+}
