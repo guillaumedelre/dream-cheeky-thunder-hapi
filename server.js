@@ -40,6 +40,9 @@ server.route({
     }
 });
 
+/**
+ * todo update pitch and yaw current angle
+ */
 server.route({
     method: 'GET',
     path: '/move/{direction}/{duration}',
